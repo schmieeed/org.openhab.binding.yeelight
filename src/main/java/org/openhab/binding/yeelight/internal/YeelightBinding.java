@@ -55,6 +55,7 @@ public class YeelightBinding extends AbstractActiveBinding<YeelightBindingProvid
     //Constants
     private final String RESULT = "result";
     private final String TOGGLE = "toggle";
+    private final String BG_TOGGLE = "bg_toggle";
     private final String NIGHTLIGHT = "nightlight";
     private final String SMOOTH = "smooth";
     private final String GET_PROP = "get_prop";
@@ -299,6 +300,10 @@ public class YeelightBinding extends AbstractActiveBinding<YeelightBindingProvid
                 String action = config.getAction();
                 if (action.equals(TOGGLE))
                     continue;
+                
+                String action = config.getAction();
+                if (action.equals(BG_TOGGLE))
+                        continue;
 
                 String location = config.getLocation();
                 YeelightGetPropsResponse result;
@@ -398,6 +403,11 @@ public class YeelightBinding extends AbstractActiveBinding<YeelightBindingProvid
                     sendYeelightToggleCommand(location);
                 }
                 break;
+            case BG_TOGGLE:
+                if (command instanceof OnOffType && command.equals(OnOffType.ON)) {
+                    sendYeelightBGToggleCommand(location);
+                }
+                break;
             case SET_BRIGHT:
                 sendYeelightBrightCommand(location, Integer.parseInt(command.toString()));
                 break;
@@ -438,15 +448,20 @@ public class YeelightBinding extends AbstractActiveBinding<YeelightBindingProvid
         return sendYeelightCommand(location, TOGGLE, new Object[]{});
     }
 
+    private String sendYeelightBGToggleCommand(String location) {
+        return sendYeelightCommand(location, BG_TOGGLE, new Object[]{});
+    }
+
     private String sendYeelightBrightCommand(String location, int param) {
         return sendYeelightCommand(location, SET_BRIGHT, new Object[]{param == 0 ? 1 : param, SMOOTH, 500});
     }
 
     private String sendYeelightNightModeCommand(String location, boolean mode) {
         if (mode) {
-            return sendYeelightCommand(location, SET_SCENE, new Object[]{NIGHTLIGHT, 1});
+            //return sendYeelightCommand(location, SET_SCENE, new Object[]{NIGHTLIGHT, 1});
+            return sendYeelightPowerCommand(location, "on", 5);
         } else {
-            return sendYeelightCTCommand(location, 4000);
+            return sendYeelightPowerCommand(location, "on", 1);
         }
     }
 
@@ -464,6 +479,10 @@ public class YeelightBinding extends AbstractActiveBinding<YeelightBindingProvid
 
     private String sendYeelightPowerCommand(String location, String param) {
         return sendYeelightCommand(location, SET_POWER, new Object[]{param, "", 0});
+    }
+
+    private String sendYeelightPowerCommand(String location, String param, int mode) {
+        return sendYeelightCommand(location, SET_POWER, new Object[]{param, "", 0, mode});
     }
 
     private String sendYeelightCommand(String location, String action, Object[] params) {
